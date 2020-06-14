@@ -27,17 +27,5 @@ func main() {
 }
 
 func onReady() {
-	//if count, err := db.Resources.Count(); err != nil {
-	//	fmt.Println("no known resources")
-	//} else {
-	//	fmt.Printf("%d known resources\n", count)
-	//
-	//	elems, err := db.Resources.GetAll()
-	//	utils.LogOnError(err)
-	//	for _, elem := range elems {
-	//		fmt.Println("- " + elem.Name)
-	//	}
-	//}
-
 	fmt.Println("READY NOW!")
 }
