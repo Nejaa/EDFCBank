@@ -86,11 +86,12 @@ func (rn *routeNode) getKey() string {
 // RouterHandler receives MessageCreate events and dispatch them as required
 type Router interface {
 	RegisterPath(path string, handler RouterHandler)
+	DeleteOnAnswer(deleteOnAnswer bool)
 }
 
 type router struct {
 	RoutePrefix    string
-	DeleteOnAnswer bool
+	deleteOnAnswer bool
 	routes         map[string]*routeNode
 }
 
@@ -98,7 +99,7 @@ func NewRouter(client *disgord.Client, prefix string) Router {
 	r := &router{
 		RoutePrefix:    prefix,
 		routes:         map[string]*routeNode{},
-		DeleteOnAnswer: true,
+		deleteOnAnswer: true,
 	}
 
 	filter, err := std.NewMsgFilter(context.Background(), client)
@@ -110,6 +111,10 @@ func NewRouter(client *disgord.Client, prefix string) Router {
 	return r
 }
 
+func (r *router) DeleteOnAnswer(deleteOnAnswer bool) {
+	r.deleteOnAnswer = deleteOnAnswer
+
+}
 func (r *router) RegisterPath(path string, handler RouterHandler) {
 	path = strings.TrimSpace(path)
 	pathElems := strings.Split(path, " ")
@@ -147,7 +152,7 @@ func (r *router) handleMessage(session disgord.Session, evt *disgord.MessageCrea
 		Session:        session,
 		Event:          evt,
 		pathVariables:  map[string]interface{}{},
-		deleteOnAnswer: r.DeleteOnAnswer,
+		deleteOnAnswer: r.deleteOnAnswer,
 	}
 
 	defer func() {

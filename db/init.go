@@ -1,6 +1,7 @@
 package db
 
 import (
+	"EDFCBank/params"
 	"EDFCBank/utils"
 	"github.com/timshannon/bolthold"
 )
@@ -12,7 +13,7 @@ var Users UserRepository
 
 func init() {
 	var err error
-	st, err = bolthold.Open("test.db", 0666, nil)
+	st, err = bolthold.Open(*params.DbFile, 0666, nil)
 	utils.FatalOnError(err)
 
 	Resources = newResourceRepository(st)

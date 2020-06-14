@@ -57,7 +57,12 @@ func (u *User) RemoveResource(resource Resource, count int) {
 		banked = 0
 	}
 
-	u.Bank[resource] = banked
+	if banked == 0 {
+		banked = 0
+		delete(u.Bank, resource)
+	} else {
+		u.Bank[resource] = banked
+	}
 }
 
 type UserRepository interface {

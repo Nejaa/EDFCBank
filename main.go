@@ -2,6 +2,7 @@ package main
 
 import (
 	"EDFCBank/handlers"
+	"EDFCBank/params"
 	"EDFCBank/router"
 	"context"
 	"fmt"
@@ -19,6 +20,7 @@ func main() {
 	botPrefix := os.Getenv("BOT_PREFIX")
 
 	r := router.NewRouter(client, botPrefix)
+	r.DeleteOnAnswer(*params.DeleteOnAnswer)
 	handlers.RegisterResourceRoutes(r)
 	handlers.RegisterBankRoutes(r)
 

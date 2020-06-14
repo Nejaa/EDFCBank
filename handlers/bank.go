@@ -10,12 +10,11 @@ import (
 
 func RegisterBankRoutes(r router.Router) {
 	r.RegisterPath("bank add :resourceName :count", onBankAdd)
-	//r.RegisterPath("bank remove :resourceName :count", onBankRemove)
-	//r.RegisterPath("bank list", onBankList)
+	r.RegisterPath("bank remove :resourceName :count", onBankRemove)
+	r.RegisterPath("bank balance", onBankBalance)
 }
 
 func onBankAdd(ec *router.EventContext) {
-
 	user, err := db.Users.Get(ec.Event.Message.Author)
 	utils.PanicOnError(err)
 
@@ -42,42 +41,55 @@ func onBankAdd(ec *router.EventContext) {
 	}
 }
 
-//
-//func onBankRemove(ec *router.EventContext) {
-//	resourceName, found := ec.StringParam("resourceName")
-//	if !found {
-//		ec.Answer("No resource name given")
-//	}
-//
-//	err := db.Resources.Remove(&db.Resource{Name: resourceName})
-//	if err != bolthold.ErrKeyExists {
-//		utils.PanicOnError(err)
-//	}
-//
-//	ec.Answer("Ressource " + resourceName + " not managed anymore")
-//}
-//
-//func onBankList(ec *router.EventContext) {
-//	if count, err := db.Resources.Count(); err != nil {
-//		ec.Answer("No resource created")
-//	} else {
-//		message := fmt.Sprintf("%d known resources:\n", count)
-//		elems, err := db.Resources.GetAll()
-//		utils.PanicOnError(err)
-//		users, err := db.Users.GetAll()
-//		utils.PanicOnError(err)
-//		resourceMap := map[db.Resource]int{}
-//		for _, elem := range elems {
-//			resourceMap[*elem] = 0
-//			for _, user := range users {
-//				resourceMap[*elem] += user.GetResourceCount(*elem)
-//			}
-//		}
-//
-//		for resource, count := range resourceMap {
-//			message += fmt.Sprintf("- %s : %d \n", resource.Name, count)
-//		}
-//
-//		ec.Answer(message)
-//	}
-//}
+func onBankRemove(ec *router.EventContext) {
+	user, err := db.Users.Get(ec.Event.Message.Author)
+	utils.PanicOnError(err)
+
+	resourceName, found := ec.StringParam("resourceName")
+	if !found {
+		ec.Answer("No resource name given")
+	}
+
+	count, found := ec.IntParam("count")
+	if !found {
+		ec.Answer("No resource count given")
+	}
+
+	resource, err := db.Resources.Get(resourceName)
+	if err == bolthold.ErrNotFound {
+		resource = &db.Resource{Name: resourceName} // allow to remove elements from an un-managed resource for cleanup
+	} else if err != nil {
+		utils.PanicOnError(err)
+	}
+
+	user.RemoveResource(*resource, count)
+	err = db.Users.Update(user)
+	utils.PanicOnError(err)
+	ec.Answer(fmt.Sprintf("<@%d> you now own %d %s", user.Id, user.GetResourceCount(*resource), resource.Name))
+}
+
+func onBankBalance(ec *router.EventContext) {
+
+	user, err := db.Users.Get(ec.Event.Message.Author)
+	utils.PanicOnError(err)
+
+	resourceSet := map[db.Resource]struct{}{}
+	resources, err := db.Resources.GetAll()
+	for _, resource := range resources {
+		resourceSet[*resource] = struct{}{}
+	}
+
+	message := fmt.Sprintf("<@%d> your balance is:\n", user.Id)
+	if len(user.Bank) == 0 {
+		message += "Empty"
+	} else {
+		for resource, count := range user.Bank {
+			managedStatus := "not managed"
+			if _, found := resourceSet[resource]; found {
+				managedStatus = "managed"
+			}
+			message += fmt.Sprintf("\t- %s : %d (%s)\n", resource.Name, count, managedStatus)
+		}
+	}
+	ec.Answer(message)
+}
