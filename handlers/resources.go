@@ -11,7 +11,7 @@ import (
 func RegisterResourceRoutes(r router.Router) {
 	r.RegisterPath("resources add :resourceName", onResourceAdd)
 	r.RegisterPath("resources remove :resourceName", onResourceRemove)
-	r.RegisterPath("resources list ", onResourceList)
+	r.RegisterPath("resources list", onResourceList)
 }
 
 func onResourceList(ec *router.EventContext) {
@@ -22,12 +22,21 @@ func onResourceList(ec *router.EventContext) {
 		message := fmt.Sprintf("%d known resources:\n", count)
 		elems, err := db.Resources.GetAll()
 		utils.PanicOnError(err)
+		users, err := db.Users.GetAll()
+		utils.PanicOnError(err)
+		resourceMap := map[db.Resource]int{}
 		for _, elem := range elems {
-			message = message + "- " + elem.Name + "\n"
+			resourceMap[*elem] = 0
+			for _, user := range users {
+				resourceMap[*elem] += user.GetResourceCount(*elem)
+			}
+		}
+
+		for resource, count := range resourceMap {
+			message += fmt.Sprintf("- %s : %d \n", resource.Name, count)
 		}
 
 		ec.Answer(message)
-
 	}
 }
 

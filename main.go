@@ -20,9 +20,10 @@ func main() {
 
 	r := router.NewRouter(client, botPrefix)
 	handlers.RegisterResourceRoutes(r)
+	handlers.RegisterBankRoutes(r)
 
 	// connect, and stay connected until a system interrupt takes place
-	defer client.StayConnectedUntilInterrupted(context.Background())
+	defer func() { _ = client.StayConnectedUntilInterrupted(context.Background()) }()
 	client.Ready(onReady)
 }
 

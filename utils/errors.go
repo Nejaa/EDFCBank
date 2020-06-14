@@ -27,14 +27,14 @@ func LogOnError(err error) {
 	}
 }
 
-func WarnOnError(err error) {
-	if err != nil {
-		logrus.WithError(err).Warn()
-	}
-}
-
-func InfoOnError(err error) {
-	if err != nil {
-		logrus.WithError(err).Info()
-	}
-}
+//func WarnOnError(err error) {
+//	if err != nil {
+//		logrus.WithError(err).Warn()
+//	}
+//}
+//
+//func InfoOnError(err error) {
+//	if err != nil {
+//		logrus.WithError(err).Info()
+//	}
+//}

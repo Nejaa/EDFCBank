@@ -8,6 +8,7 @@ import (
 var st *bolthold.Store
 
 var Resources ResourceRepository
+var Users UserRepository
 
 func init() {
 	var err error
@@ -15,5 +16,6 @@ func init() {
 	utils.FatalOnError(err)
 
 	Resources = newResourceRepository(st)
+	Users = newUserRepository(st)
 
 }

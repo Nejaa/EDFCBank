@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/andersfylling/disgord"
 	"github.com/andersfylling/disgord/std"
+	"strconv"
 	"strings"
 )
 
@@ -28,7 +29,7 @@ func (ec *EventContext) StringParam(paramName string) (string, bool) {
 // IntParam returns a path variable formatted as an int or -1 if failed
 func (ec *EventContext) IntParam(paramName string) (int, bool) {
 	if val, found := ec.pathVariables[paramName]; found {
-		if n, ok := val.(int); ok {
+		if n, err := strconv.Atoi(val.(string)); err == nil {
 			return n, true
 		}
 	}

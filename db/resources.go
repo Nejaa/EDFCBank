@@ -5,7 +5,7 @@ import (
 )
 
 type Resource struct {
-	Name string `boltholdKey:"name"`
+	Name string `boltholdKey:"Name"`
 }
 
 type ResourceRepository interface {
@@ -33,8 +33,8 @@ func (r *resourceRepository) Remove(resource *Resource) error {
 }
 
 func (r *resourceRepository) Get(name string) (*Resource, error) {
-	var resource *Resource
-	err := r.store.Find(resource, bolthold.Where("name").Eq(name))
+	resource := &Resource{}
+	err := r.store.FindOne(resource, bolthold.Where("Name").Eq(name))
 	return resource, err
 }
 
